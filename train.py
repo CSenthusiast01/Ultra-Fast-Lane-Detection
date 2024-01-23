@@ -147,7 +147,24 @@ if __name__ == "__main__":
     cp_projects(args.auto_backup, work_dir)
 
     for epoch in range(resume_epoch, cfg.epoch):
-
+        # EXPERIMENTAL CODE STARTS
+        # Define the path of the folder
+        folder_path = work_dir
+        
+        # Get the list of files in the folder
+        files = os.listdir(folder_path)
+        
+        # Loop through the files and delete them
+        for file in files:
+            # Join the folder path and the file name
+            file_path = os.path.join(folder_path, file)
+            # Check if the file is a file (not a folder)
+            if os.path.isfile(file_path):
+                # Delete the file
+                os.remove(file_path)
+                # Print a message
+                print(f"Deleted {file_path}")
+        # EXPERIMENTAL CODE ENDS
         train(net, train_loader, loss_dict, optimizer, scheduler,logger, epoch, metric_dict, cfg.use_aux)
         
         save_model(net, optimizer, epoch ,work_dir, distributed)
