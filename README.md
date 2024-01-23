@@ -1,3 +1,6 @@
+# Colab Notebook for training
+Please see [ultrafast-lane-detection.ipynb](./ultrafast-lane-detection.ipynb)
+
 # Ultra-Fast-Lane-Detection
 PyTorch implementation of the paper "[Ultra Fast Structure-aware Deep Lane Detection](https://arxiv.org/abs/2004.11757)".
 
