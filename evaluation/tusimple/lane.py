@@ -34,7 +34,7 @@ class LaneEval(object):
         angles = [LaneEval.get_angle(np.array(x_gts), np.array(y_samples)) for x_gts in gt]
         threshs = [LaneEval.pixel_thresh / np.cos(angle) for angle in angles]
         line_accs = []
-        fp, fn = 0., 0.
+        fp, fn, tp, tn = 0., 0., 0., 0.
         matched = 0.
         for x_gts, thresh in zip(gt, threshs):
             accs = [LaneEval.line_accuracy(np.array(x_preds), np.array(x_gts), thresh) for x_preds in pred]
@@ -43,6 +43,8 @@ class LaneEval(object):
                 fn += 1
             else:
                 matched += 1
+                tp += 1
+                tn += len(x_preds) - 1
             line_accs.append(max_acc)
         fp = len(pred) - matched
         if len(gt) > 4 and fn > 0:
@@ -50,7 +52,7 @@ class LaneEval(object):
         s = sum(line_accs)
         if len(gt) > 4:
             s -= min(line_accs)
-        return s / max(min(4.0, len(gt)), 1.), fp / len(pred) if len(pred) > 0 else 0., fn / max(min(len(gt), 4.) , 1.)
+        return s / max(min(4.0, len(gt)), 1.), fp / len(pred) if len(pred) > 0 else 0., fn / max(min(len(gt), 4.) , 1.), tp/len(pred), tn/len(pred)
 
     @staticmethod
     def bench_one_submit(pred_file, gt_file):
@@ -62,7 +64,7 @@ class LaneEval(object):
         if len(json_gt) != len(json_pred):
             raise Exception('We do not get the predictions of all the test tasks')
         gts = {l['raw_file']: l for l in json_gt}
-        accuracy, fp, fn = 0., 0., 0.
+        accuracy, fp, fn, tp, tn = 0., 0., 0., 0., 0.
         for pred in json_pred:
             if 'raw_file' not in pred or 'lanes' not in pred or 'run_time' not in pred:
                 raise Exception('raw_file or lanes or run_time not in some predictions.')
@@ -75,12 +77,14 @@ class LaneEval(object):
             gt_lanes = gt['lanes']
             y_samples = gt['h_samples']
             try:
-                a, p, n = LaneEval.bench(pred_lanes, gt_lanes, y_samples, run_time)
+                a, p, n, t, t_not = LaneEval.bench(pred_lanes, gt_lanes, y_samples, run_time)
             except BaseException as e:
                 raise Exception('Format of lanes error.')
             accuracy += a
             fp += p
             fn += n
+            tp += t
+            tn += t_not
         num = len(gts)
         # the first return parameter is the default ranking parameter
         pr = 1 - fp / num
@@ -93,7 +97,11 @@ class LaneEval(object):
             {'name': 'Accuracy', 'value': accuracy / num, 'order': 'desc'},
             {'name': 'FP', 'value': fp / num, 'order': 'asc'},
             {'name': 'FN', 'value': fn / num, 'order': 'asc'},
-            {'name': 'F1', 'value': f1, 'order': 'asc'}
+            {'name': 'tp', 'value': tp / num, 'order': 'desc'},
+            {'name': 'tn', 'value': tn / num, 'order': 'desc'},
+            {'name': 'F1', 'value': f1, 'order': 'asc'},
+            {'name': 'Precision', 'value': pr, 'order':'asc'},
+            {'name': 'Recall', 'value':re, 'order':'asc'}
         ])
 
 
