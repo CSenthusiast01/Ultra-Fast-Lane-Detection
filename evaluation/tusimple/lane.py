@@ -36,7 +36,7 @@ class LaneEval(object):
         line_accs = []
         fp, fn, tp, tn = 0., 0., 0., 0.
         matched = 0.
-        for x_gts, thresh in zip(gt, threshs):
+        for x_gts, thresh, x_preds in zip(gt, threshs, pred):
             accs = [LaneEval.line_accuracy(np.array(x_preds), np.array(x_gts), thresh) for x_preds in pred]
             max_acc = np.max(accs) if len(accs) > 0 else 0.
             if max_acc < LaneEval.pt_thresh:
@@ -44,7 +44,8 @@ class LaneEval(object):
             else:
                 matched += 1
                 tp += 1
-                tn += len(x_preds) - 1
+                # experimental code:
+                tn += np.sum((np.array(x_preds) < 0) & (np.array(x_gts) < 0))/10 
             line_accs.append(max_acc)
         fp = len(pred) - matched
         if len(gt) > 4 and fn > 0:
