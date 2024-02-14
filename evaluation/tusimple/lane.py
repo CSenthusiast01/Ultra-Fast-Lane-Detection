@@ -48,11 +48,11 @@ class LaneEval(object):
         fp = len(pred) - matched
         if len(gt) > 4 and fn > 0:
             fn -= 1
-        tn = 4 - (tp + fp + fn)
+        tn = len(gt) - (tp + fp + fn)
         s = sum(line_accs)
         if len(gt) > 4:
             s -= min(line_accs)
-        return s / max(min(4.0, len(gt)), 1.), fp / len(pred) if len(pred) > 0 else 0., fn / max(min(len(gt), 4.) , 1.), tp/len(pred), tn
+        return s / max(min(4.0, len(gt)), 1.), fp / len(pred) if len(pred) > 0 else 0., fn / max(min(len(gt), 4.) , 1.), tp/len(pred), tn/max(min(len(gt), 4.) , 1.)
 
     @staticmethod
     def bench_one_submit(pred_file, gt_file):
@@ -97,8 +97,8 @@ class LaneEval(object):
             {'name': 'Accuracy', 'value': accuracy / num, 'order': 'desc'},
             {'name': 'FP', 'value': fp / num, 'order': 'asc'},
             {'name': 'FN', 'value': fn / num, 'order': 'asc'},
-            {'name': 'tp', 'value': tp / num, 'order': 'desc'},
-            {'name': 'tn', 'value': tn / num, 'order': 'desc'},
+            {'name': 'TP', 'value': tp / num, 'order': 'desc'},
+            {'name': 'TN', 'value': tn / num, 'order': 'desc'},
             {'name': 'F1', 'value': f1, 'order': 'asc'},
             {'name': 'Precision', 'value': pr, 'order':'asc'},
             {'name': 'Recall', 'value':re, 'order':'asc'}
