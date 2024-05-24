@@ -90,6 +90,7 @@ class LaneEval(object):
         pr = 1 - fp / num
         re = 1 - fn / num
         tn = len(gts) - (fp + fn + tp) 
+        tn=0;
         if (pr+re) == 0:
             f1 = 0
         else:
